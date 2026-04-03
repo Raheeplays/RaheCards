@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Stores player information and statistics.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The player's display name." },
+        "raheeKey": { "type": "string", "description": "A unique key for the player." },
+        "wins": { "type": "integer", "description": "Number of games won." },
+        "losses": { "type": "integer", "description": "Number of games lost." },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "uid": { "type": "string" },
+        "isApproved": { "type": "boolean", "description": "Whether the user has been approved by an admin." }
+      },
+      "required": ["name", "raheeKey", "wins", "losses"]
+    },
+    "GameRoom": {
+      "title": "Game Room",
+      "description": "Stores state for a 1v1 or solo game session.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "roomKey": { "type": "string" },
+        "hostUid": { "type": "string" },
+        "status": { "type": "string", "enum": ["waiting", "playing", "finished"] },
+        "players": { "type": "array", "description": "List of players in the room." },
+        "currentTurn": { "type": "string", "description": "UID of the player whose turn it is." },
+        "winner": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "comparison": { "type": "object" },
+        "lastAction": { "type": "object" }
+      },
+      "required": ["status", "players", "createdAt", "roomKey", "hostUid"]
+    },
+    "Feedback": {
+      "title": "Feedback",
+      "description": "Player feedback and ratings.",
+      "type": "object",
+      "properties": {
+        "userName": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "rating": { "type": "integer" },
+        "comment": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userName", "email", "rating", "comment", "timestamp"]
+    },
+    "CardData": {
+      "title": "Card Data",
+      "description": "Represents a single trading card.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "symbol": { "type": "string" },
+        "rank": { "type": "string" },
+        "image": { "type": "string" },
+        "details": { "type": "string" },
+        "stats": { "type": "object" }
+      },
+      "required": ["id", "name", "symbol", "rank", "image", "details", "stats"]
+    },
+    "GameLog": {
+      "title": "Game Log",
+      "description": "Record of a game session played by a user.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "UID of the player." },
+        "userName": { "type": "string", "description": "Name of the player." },
+        "mode": { "type": "string", "enum": ["solo", "1v1", "multi"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "roomId": { "type": "string", "description": "ID of the game room." },
+        "status": { "type": "string", "enum": ["started", "finished"] }
+      },
+      "required": ["uid", "userName", "mode", "timestamp", "roomId", "status"]
+    }
+  },
+  "firestore": {
+    "/users": {
+      "schema": "UserProfile",
+      "description": "User profiles indexed by UID or raheeKey."
+    },
+    "/rooms": {
+      "schema": "GameRoom",
+      "description": "Active and finished game rooms."
+    },
+    "/feedback": {
+      "schema": "Feedback",
+      "description": "Player feedback submissions."
+    },
+    "/cards": {
+      "schema": "CardData",
+      "description": "Game cards data."
+    },
+    "/auth_logs": {
+      "schema": "object",
+      "description": "Authentication logs."
+    },
+    "/game_logs": {
+      "schema": "GameLog",
+      "description": "Logs of games played."
+    }
+  }
+}

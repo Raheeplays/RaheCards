@@ -1,0 +1,33 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "cards": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "rooms": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "feedback": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "auth_logs": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    ".info": {
+      "connected": {
+        ".read": true
+      }
+    }
+  }
+}
