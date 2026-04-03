@@ -1,0 +1,143 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: {userId}
+// Fields:
+//   - name: string (required) - Player name
+//   - raheeKey: string (required) - Unique key
+//   - wins: number (required) - Win count
+//   - losses: number (required) - Loss count
+//   - role: string (optional) - admin, user
+//   - uid: string (optional) - UID
+//
+// Collection: rooms
+// Document ID: {roomId}
+// Fields:
+//   - id: string (optional)
+//   - roomKey: string (required)
+//   - hostUid: string (required)
+//   - status: string (required) - waiting, playing, finished
+//   - players: list (required) - Player objects
+//   - currentTurn: string (optional) - UID
+//   - winner: string (optional) - UID
+//   - createdAt: timestamp (required)
+//   - comparison: map (optional)
+//   - lastAction: map (optional)
+//
+// Collection: feedback
+// Document ID: {feedbackId}
+// Fields:
+//   - userName: string (required)
+//   - email: string (required)
+//   - rating: number (required) - 1-5
+//   - comment: string (required)
+//   - timestamp: timestamp (required)
+//
+// Collection: cards
+// Document ID: {cardId}
+// Fields:
+//   - id: string (required)
+//   - name: string (required)
+//   - symbol: string (required)
+//   - rank: string (required)
+//   - image: string (required)
+//   - details: string (required)
+//   - stats: map (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAdmin(data) {
+      return data != null && (data.role == 'admin' || data.name.lower() == 'rahee');
+    }
+
+    function isRecent(ts) {
+      return ts is timestamp && 
+             ts > request.time - duration.value(5, 'm') &&
+             ts < request.time + duration.value(5, 'm');
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['name', 'raheeKey', 'wins', 'losses']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 50 &&
+             data.raheeKey is string && data.raheeKey.size() > 0 && data.raheeKey.size() < 100 &&
+             data.wins is number && data.wins >= 0 &&
+             data.losses is number && data.losses >= 0 &&
+             (!('role' in data) || data.role in ['admin', 'user']) &&
+             (!('uid' in data) || data.uid is string);
+    }
+
+    function isValidFeedback(data) {
+      return data.keys().hasAll(['userName', 'email', 'rating', 'comment', 'timestamp']) &&
+             data.userName is string && data.userName.size() > 0 && data.userName.size() < 100 &&
+             data.email is string && data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$") &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() > 0 && data.comment.size() < 2000 &&
+             data.timestamp is timestamp;
+    }
+
+    function isValidRoom(data) {
+      return data.keys().hasAll(['status', 'players', 'createdAt', 'roomKey', 'hostUid']) &&
+             data.status in ['waiting', 'playing', 'finished'] &&
+             data.players is list && data.players.size() <= 2 &&
+             data.createdAt is timestamp &&
+             data.roomKey is string && data.roomKey.size() > 0 &&
+             data.hostUid is string && data.hostUid.size() > 0;
+    }
+
+    function isValidCard(data) {
+      return data.keys().hasAll(['id', 'name', 'symbol', 'rank', 'image', 'details', 'stats']) &&
+             data.id is string && data.name is string &&
+             data.symbol is string && data.rank is string &&
+             data.image is string && data.details is string &&
+             data.stats is map;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /connection_test/{docId} {
+      allow read: if true;
+    }
+
+    match /cards/{cardId} {
+      allow read: if true;
+      allow write: if true; // In a real app, you'd want to verify a secret key or similar
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isValidUser(request.resource.data);
+      allow update: if isValidUser(request.resource.data);
+      allow delete: if true;
+    }
+
+    match /rooms/{roomId} {
+      allow read: if true;
+      allow create: if isValidRoom(request.resource.data);
+      allow update: if isValidRoom(request.resource.data);
+      allow delete: if true;
+    }
+
+    match /feedback/{feedbackId} {
+      allow read: if true;
+      allow create: if isValidFeedback(request.resource.data);
+      allow delete: if true;
+    }
+
+    match /auth_logs/{logId} {
+      allow read: if true;
+      allow create: if true;
+    }
+  }
+}
