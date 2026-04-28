@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pagesz
+name: Deploy to GitHub Pages
 on:
   push:
     branches: ["main"]
@@ -17,9 +17,12 @@ jobs:
           cache: 'npm'
       - run: npm install
       - run: npm run build
+      
+      # Sabse zaroori step sub-pages ke liye:
+      - name: Setup Multi-page Routing
+        run: cp dist/index.html dist/404.html
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: './dist'
       - uses: actions/deploy-pages@v4
-
-
