@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss(), // Yeh aapki design (CSS) ko build mein include karega
+    tailwindcss(),
   ],
-  base: '/RaheeCards/', // Isse CSS files ka path sahi ho jayega
+  base: '/RaheeCards/', // GitHub repository ka naam yahan hona chahiye
 })
